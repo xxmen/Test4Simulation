@@ -1,0 +1,164 @@
+void PredictBall2(Environment *env)
+{
+    Mydata * p;
+    p=(Mydata *)env->userData;
+
+    Vector3D predictball;
+    Vector3D ballspeed;
+    int i=0;
+//	p->preball.x = p->curball.x + steps*(p->curball.x - p->oldball.x);
+//	p->preball.y = p->curball.y + steps*(p->curball.y - p->oldball.y);
+    ///z 由来保存球的方向
+//	p->preball.z = Atan( (p->curball.y - p->oldball.y) , (p->curball.x - p->oldball.x) );
+
+    predictball.x = p->curball.x;			//赋初值
+    predictball.y = p->curball.y;
+//	predictball.z = p->curball.z;
+
+    ballspeed.x = p->ballspeed.x ;
+    ballspeed.y = p->ballspeed.y ;
+    ballspeed.z = p->ballspeed.z ;
+
+    for(i=0; i<30; i++)
+    {
+        predictball.x += ballspeed.x ;
+        predictball.y += ballspeed.y ;
+//处理撞墙
+        if( predictball.x > FRIGHT )
+        {
+            predictball.x -= ballspeed.x ;	//retern
+            predictball.y -= ballspeed.y ;
+
+            ballspeed.x *=-SPEED_NORMAL;	//loose
+            ballspeed.y *= SPEED_TANGENT;
+
+            predictball.x += ballspeed.x ;	//go on
+            predictball.y += ballspeed.y ;
+
+        }
+        else if( predictball.x < FLEFT )
+        {
+            predictball.x -= ballspeed.x ;	//retern
+            predictball.y -= ballspeed.y ;
+
+            ballspeed.x *=-SPEED_NORMAL;	//loose
+            ballspeed.y *= SPEED_TANGENT;
+
+            predictball.x += ballspeed.x ;	//go on
+            predictball.y += ballspeed.y ;
+
+        }
+        else if( predictball.y < FBOT )
+        {
+            predictball.x -= ballspeed.x ;	//retern
+            predictball.y -= ballspeed.y ;
+
+            ballspeed.x *= SPEED_TANGENT;	//loose
+            ballspeed.y *=-SPEED_NORMAL;
+
+            predictball.x += ballspeed.x ;	//go on
+            predictball.y += ballspeed.y ;
+
+        }
+        else if( predictball.y > FTOP )
+        {
+            predictball.x -= ballspeed.x ;	//retern
+            predictball.y -= ballspeed.y ;
+
+            ballspeed.x *= SPEED_TANGENT;	//loose
+            ballspeed.y *=-SPEED_NORMAL;
+
+            predictball.x += ballspeed.x ;	//go on
+            predictball.y += ballspeed.y ;
+        }
+
+        if( predictball.x + predictball.y > FRIGHT +FTOP -CORNER)
+        {
+            //右上
+            double vx,vy;
+            vy=0.7071*ballspeed.y + 0.7071*ballspeed.x;	//变换1
+            vx=-0.7071*ballspeed.y + 0.7071*ballspeed.x;
+
+            predictball.x -= ballspeed.x ;	//retern
+            predictball.y -= ballspeed.y ;
+
+            vx *= SPEED_TANGENT;	//loose
+            vy *=-SPEED_NORMAL;
+
+            ballspeed.y = 0.7071 * vy - 0.7071 * vx;	//变换2
+            ballspeed.x = 0.7071 * vy + 0.7071 * vx;
+
+            predictball.x += ballspeed.x ;	//go on
+            predictball.y += ballspeed.y ;
+            /*
+            y1 = y * cos() - x * sin();
+            x1 = y * sin() + x * sin();
+            */
+        }
+        else if( predictball.x + predictball.y < FLEFT +FBOT+CORNER)
+        {
+            //左下
+            double vx,vy;
+            vy=0.7071*ballspeed.y + 0.7071*ballspeed.x;	//变换1
+            vx=-0.7071*ballspeed.y + 0.7071*ballspeed.x;
+
+            predictball.x -= ballspeed.x ;	//retern
+            predictball.y -= ballspeed.y ;
+
+            vx *= SPEED_TANGENT;	//loose
+            vy *=-SPEED_NORMAL;
+
+            ballspeed.y = 0.7071 * vy - 0.7071 * vx;	//变换2
+            ballspeed.x = 0.7071 * vy + 0.7071 * vx;
+
+            predictball.x += ballspeed.x ;	//go on
+            predictball.y += ballspeed.y ;
+        }
+        else if( predictball.x - predictball.y > FRIGHT -FBOT -CORNER)
+        {
+            //右下
+            double vx,vy;
+            vy=0.7071*ballspeed.y - 0.7071*ballspeed.x;	//变换1
+            vx=0.7071*ballspeed.y + 0.7071*ballspeed.x;
+
+            predictball.x -= ballspeed.x ;	//retern
+            predictball.y -= ballspeed.y ;
+
+            vx *= SPEED_TANGENT;	//loose
+            vy *=-SPEED_NORMAL;
+
+            ballspeed.y = 0.7071 * vy + 0.7071 * vx;	//变换2
+            ballspeed.x = -0.7071 * vy + 0.7071 * vx;
+
+            predictball.x += ballspeed.x ;	//go on
+            predictball.y += ballspeed.y ;
+        }
+        else if( predictball.y - predictball.x > FTOP - FLEFT-CORNER)
+        {
+            //左上
+            double vx,vy;
+            vy=0.7071*ballspeed.y - 0.7071*ballspeed.x;	//变换1
+            vx=0.7071*ballspeed.y + 0.7071*ballspeed.x;
+
+            predictball.x -= ballspeed.x ;	//retern
+            predictball.y -= ballspeed.y ;
+
+            vx *= SPEED_TANGENT;	//loose
+            vy *=-SPEED_NORMAL;
+
+            ballspeed.y = 0.7071 * vy + 0.7071 * vx;	//变换2
+            ballspeed.x = -0.7071 * vy + 0.7071 * vx;
+
+            predictball.x += ballspeed.x ;	//go on
+            predictball.y += ballspeed.y ;
+        }
+
+        p->ba[i].x=predictball.x ;
+        p->ba[i].y=predictball.y ;
+        p->ba[i].z=Atan( ballspeed.y ,ballspeed.x );
+//处理四角
+    }
+
+
+}
+
